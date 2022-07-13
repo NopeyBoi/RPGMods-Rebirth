@@ -203,7 +203,7 @@ public class ExperienceSystem
         }
         Equipment eq_comp = entityManager.GetComponentData<Equipment>(entity);
         level = level - eq_comp.WeaponLevel._Value - eq_comp.ArmorLevel._Value;
-        eq_comp.SpellLevel._Value = level;
+        eq_comp.SpellLevel._Value = level + 0.1f;
 
         entityManager.SetComponentData(entity, eq_comp);
     }

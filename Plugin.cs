@@ -240,6 +240,8 @@ public class Plugin : BasePlugin, IRunOnInitialized
         ExperienceSystem.GroupModifier = EXPGroupModifier.Value;
         ExperienceSystem.GroupMaxDistance = EXPGroupMaxDistance.Value;
 
+        RebirthSystem.MaxRebirthLevel = MaxRebirthLevel.Value;
+
         WeaponMasterSystem.isMasteryEnabled = EnableWeaponMaster.Value;
         WeaponMasterSystem.isDecaySystemEnabled = EnableWeaponMasterDecay.Value;
         WeaponMasterSystem.Offline_DecayValue = Offline_Weapon_MasteryDecayValue.Value;
