@@ -1,12 +1,10 @@
 ﻿using HarmonyLib;
-using Unity.Entities;
-using Unity.Collections;
-using ProjectM.Network;
 using ProjectM;
-using ProjectM.Sequencer;
-using RPGMods.Utils;
-using RPGMods.Commands;
+using ProjectM.Network;
 using RPGMods.Systems;
+using RPGMods.Utils;
+using Unity.Collections;
+using Unity.Entities;
 
 namespace RPGMods.Hooks;
 [HarmonyPatch(typeof(ModifyUnitStatBuffSystem_Spawn), nameof(ModifyUnitStatBuffSystem_Spawn.OnUpdate))]
@@ -163,7 +161,7 @@ public class ModifyUnitStatBuffSystem_Spawn_Patch
         EntityManager entityManager = __instance.EntityManager;
         NativeArray<Entity> entities = __instance.__OnUpdate_LambdaJob0_entityQuery.ToEntityArray(Allocator.Temp);
 
-        foreach (var entity in entities)
+        foreach (Entity entity in entities)
         {
             PrefabGUID GUID = entityManager.GetComponentData<PrefabGUID>(entity);
             if (GUID.Equals(Database.buff.Buff_VBlood_Perk_Moose))
@@ -175,45 +173,44 @@ public class ModifyUnitStatBuffSystem_Spawn_Patch
                 Entity User = playerCharacter.UserEntity._Entity;
                 User Data = entityManager.GetComponentData<User>(User);
 
-                var Buffer = entityManager.GetBuffer<ModifyUnitStatBuff_DOTS>(entity);
+                DynamicBuffer<ModifyUnitStatBuff_DOTS> Buffer = entityManager.GetBuffer<ModifyUnitStatBuff_DOTS>(entity);
 
                 Buffer.Clear();
 
                 if (WeaponMasterSystem.isMasteryEnabled) WeaponMasterSystem.BuffReceiver(Buffer, Owner, Data.PlatformId);
-
-                if (Database.nocooldownlist.TryGetValue(Data.PlatformId, out bool b))
+                if (Database.nocooldownlist.TryGetValue(Data.PlatformId, out _))
                 {
-                    Buffer.Add(Cooldown);
+                    _ = Buffer.Add(Cooldown);
                 }
 
-                if (Database.sunimmunity.TryGetValue(Data.PlatformId, out bool a))
+                if (Database.sunimmunity.TryGetValue(Data.PlatformId, out _))
                 {
-                    Buffer.Add(SunCharge);
-                    Buffer.Add(Hazard);
-                    Buffer.Add(SunResist);
+                    _ = Buffer.Add(SunCharge);
+                    _ = Buffer.Add(Hazard);
+                    _ = Buffer.Add(SunResist);
                 }
 
-                if (Database.speeding.TryGetValue(Data.PlatformId, out bool c))
+                if (Database.speeding.TryGetValue(Data.PlatformId, out _))
                 {
-                    Buffer.Add(Speed);
+                    _ = Buffer.Add(Speed);
                 }
 
-                if (Database.godmode.TryGetValue(Data.PlatformId, out bool d))
+                if (Database.godmode.TryGetValue(Data.PlatformId, out _))
                 {
-                    Buffer.Add(PResist);
-                    Buffer.Add(FResist);
-                    Buffer.Add(HResist);
-                    Buffer.Add(SResist);
-                    Buffer.Add(SunResist);
-                    Buffer.Add(GResist);
-                    Buffer.Add(SPResist);
-                    Buffer.Add(PPower);
-                    Buffer.Add(SPPower);
-                    Buffer.Add(MaxYield);
-                    Buffer.Add(MaxHP);
-                    Buffer.Add(Hazard);
-                    Buffer.Add(SunCharge);
-                    Buffer.Add(DurabilityLoss);
+                    _ = Buffer.Add(PResist);
+                    _ = Buffer.Add(FResist);
+                    _ = Buffer.Add(HResist);
+                    _ = Buffer.Add(SResist);
+                    _ = Buffer.Add(SunResist);
+                    _ = Buffer.Add(GResist);
+                    _ = Buffer.Add(SPResist);
+                    _ = Buffer.Add(PPower);
+                    _ = Buffer.Add(SPPower);
+                    _ = Buffer.Add(MaxYield);
+                    _ = Buffer.Add(MaxHP);
+                    _ = Buffer.Add(Hazard);
+                    _ = Buffer.Add(SunCharge);
+                    _ = Buffer.Add(DurabilityLoss);
                 }
             }
         }
@@ -230,7 +227,7 @@ public class BuffSystem_Spawn_Server_Patch
         if (PvPSystem.isPunishEnabled || SiegeSystem.isSiegeBuff || PermissionSystem.isVIPSystem)
         {
             NativeArray<Entity> entities = __instance.__OnUpdate_LambdaJob0_entityQuery.ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
+            foreach (Entity entity in entities)
             {
                 PrefabGUID GUID = __instance.EntityManager.GetComponentData<PrefabGUID>(entity);
                 //if (WeaponMasterSystem.isMasteryEnabled) WeaponMasterSystem.BuffReceiver(entity, GUID);
@@ -248,7 +245,7 @@ public class BuffSystem_Spawn_Server_Patch
         if (HunterHunted.isActive || WeaponMasterSystem.isMasteryEnabled)
         {
             NativeArray<Entity> entities = __instance.__OnUpdate_LambdaJob0_entityQuery.ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
+            foreach (Entity entity in entities)
             {
                 if (!__instance.EntityManager.HasComponent<InCombatBuff>(entity)) continue;
                 Entity e_Owner = __instance.EntityManager.GetComponentData<EntityOwner>(entity).Owner;
@@ -272,7 +269,7 @@ public class ModifyBloodDrainSystem_Spawn_Patch
         if (PermissionSystem.isVIPSystem)
         {
             NativeArray<Entity> entities = __instance.__OnUpdate_LambdaJob0_entityQuery.ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
+            foreach (Entity entity in entities)
             {
                 PrefabGUID GUID = __instance.EntityManager.GetComponentData<PrefabGUID>(entity);
                 if (PermissionSystem.isVIPSystem) PermissionSystem.BuffReceiver(entity, GUID);

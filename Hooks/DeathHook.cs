@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using ProjectM;
 using ProjectM.Network;
-using RPGMods.Commands;
 using RPGMods.Systems;
 using RPGMods.Utils;
 using Unity.Collections;
@@ -48,11 +47,11 @@ public class DeathEventListenerSystem_Patch
                     //-- Check for AutoRespawn
                     if (user.IsConnected)
                     {
-                        bool isServerWide = Database.autoRespawn.TryGetValue(1, out bool value);
+                        bool isServerWide = Database.autoRespawn.TryGetValue(1, out _);
                         bool doRespawn;
                         if (!isServerWide)
                         {
-                            doRespawn = Database.autoRespawn.TryGetValue(SteamID, out bool value_);
+                            doRespawn = Database.autoRespawn.TryGetValue(SteamID, out _);
                         }
                         else { doRespawn = true; }
 

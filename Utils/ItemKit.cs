@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace RPGMods.Utils
+namespace RPGMods.Utils;
+
+public class ItemKit
 {
-    public class ItemKit
-    {
-        public string Name { get; }
-        public Dictionary<int, int> PrefabGUIDs { get; }
+    public string Name { get; }
+    public Dictionary<int, int> PrefabGUIDs { get; }
 
-        public ItemKit(string name, Dictionary<int, int> prefabGuids)
-        {
-            Name = name;
-            PrefabGUIDs = prefabGuids;
-        }
+    public ItemKit(string name, Dictionary<int, int> prefabGuids)
+    {
+        Name = name;
+        PrefabGUIDs = prefabGuids;
     }
 }

@@ -7,98 +7,97 @@ using System.Text.Json;
 using Unity.Entities;
 using Wetstone.API;
 
-namespace RPGMods.Commands
-{
-    [Command("autorespawn", Usage = "autorespawn [<PlayerName>]", Description = "Toggle auto respawn on the same position on death.")]
-    public static class AutoRespawn
-    {
-        public static void Initialize(Context ctx)
-        {
-            var entityManager = ctx.EntityManager;
-            ulong SteamID = ctx.Event.User.PlatformId;
-            string PlayerName = ctx.Event.User.CharacterName.ToString();
-            bool isServerWide = false;
+namespace RPGMods.Commands;
 
-            bool isAllowed = ctx.Event.User.IsAdmin || PermissionSystem.PermissionCheck(ctx.Event.User.PlatformId, "autorespawn_args");
-            if (ctx.Args.Length > 0 && isAllowed)
+[Command("autorespawn", Usage = "autorespawn [<PlayerName>]", Description = "Toggle auto respawn on the same position on death.")]
+public static class AutoRespawn
+{
+    public static void Initialize(Context ctx)
+    {
+        EntityManager entityManager = ctx.EntityManager;
+        ulong SteamID = ctx.Event.User.PlatformId;
+        string PlayerName = ctx.Event.User.CharacterName.ToString();
+        bool isServerWide = false;
+
+        bool isAllowed = ctx.Event.User.IsAdmin || PermissionSystem.PermissionCheck(ctx.Event.User.PlatformId, "autorespawn_args");
+        if (ctx.Args.Length > 0 && isAllowed)
+        {
+            string TargetName = string.Join(' ', ctx.Args);
+            if (TargetName.ToLower().Equals("all"))
             {
-                string TargetName = string.Join(' ', ctx.Args);
-                if (TargetName.ToLower().Equals("all"))
-                {
-                    SteamID = 1;
-                    isServerWide = true;
-                }
-                else
-                {
-                    if (Helper.FindPlayer(TargetName, false, out Entity targetEntity, out Entity targetUserEntity))
-                    {
-                        var user_component = entityManager.GetComponentData<User>(targetUserEntity);
-                        SteamID = user_component.PlatformId;
-                        PlayerName = TargetName;
-                    }
-                    else
-                    {
-                        Utils.Output.CustomErrorMessage(ctx, $"Player \"{TargetName}\" not found!");
-                        return;
-                    }
-                }
-            }
-            bool isAutoRespawn = Database.autoRespawn.ContainsKey(SteamID);
-            if (isAutoRespawn) isAutoRespawn = false;
-            else isAutoRespawn = true;
-            UpdateAutoRespawn(SteamID, isAutoRespawn);
-            string s = isAutoRespawn ? "Activated" : "Deactivated";
-            if (isServerWide)
-            {
-                ctx.Event.User.SendSystemMessage($"Server wide Auto Respawn <color=#ffff00ff>{s}</color>");
+                SteamID = 1;
+                isServerWide = true;
             }
             else
             {
-                ctx.Event.User.SendSystemMessage($"Player \"{PlayerName}\" Auto Respawn <color=#ffff00ff>{s}</color>");
+                if (Helper.FindPlayer(TargetName, false, out _, out Entity targetUserEntity))
+                {
+                    User user_component = entityManager.GetComponentData<User>(targetUserEntity);
+                    SteamID = user_component.PlatformId;
+                    PlayerName = TargetName;
+                }
+                else
+                {
+                    Utils.Output.CustomErrorMessage(ctx, $"Player \"{TargetName}\" not found!");
+                    return;
+                }
             }
         }
-
-        public static bool UpdateAutoRespawn(ulong SteamID, bool isAutoRespawn)
+        bool isAutoRespawn = Database.autoRespawn.ContainsKey(SteamID);
+        if (isAutoRespawn) isAutoRespawn = false;
+        else isAutoRespawn = true;
+        _ = UpdateAutoRespawn(SteamID, isAutoRespawn);
+        string s = isAutoRespawn ? "Activated" : "Deactivated";
+        if (isServerWide)
         {
-            bool isExist = Database.autoRespawn.ContainsKey(SteamID);
-            if (isExist || !isAutoRespawn) RemoveAutoRespawn(SteamID);
-            else Database.autoRespawn.Add(SteamID, isAutoRespawn);
+            ctx.Event.User.SendSystemMessage($"Server wide Auto Respawn <color=#ffff00ff>{s}</color>");
+        }
+        else
+        {
+            ctx.Event.User.SendSystemMessage($"Player \"{PlayerName}\" Auto Respawn <color=#ffff00ff>{s}</color>");
+        }
+    }
+
+    public static bool UpdateAutoRespawn(ulong SteamID, bool isAutoRespawn)
+    {
+        bool isExist = Database.autoRespawn.ContainsKey(SteamID);
+        if (isExist || !isAutoRespawn) _ = RemoveAutoRespawn(SteamID);
+        else Database.autoRespawn.Add(SteamID, isAutoRespawn);
+        return true;
+    }
+
+    public static void SaveAutoRespawn()
+    {
+        File.WriteAllText("BepInEx/config/RPGMods/Saves/autorespawn.json", JsonSerializer.Serialize(Database.autoRespawn, Database.JSON_options));
+    }
+
+    public static bool RemoveAutoRespawn(ulong SteamID)
+    {
+        if (Database.autoRespawn.ContainsKey(SteamID))
+        {
+            _ = Database.autoRespawn.Remove(SteamID);
             return true;
         }
+        return false;
+    }
 
-        public static void SaveAutoRespawn()
+    public static void LoadAutoRespawn()
+    {
+        if (!File.Exists("BepInEx/config/RPGMods/Saves/autorespawn.json"))
         {
-            File.WriteAllText("BepInEx/config/RPGMods/Saves/autorespawn.json", JsonSerializer.Serialize(Database.autoRespawn, Database.JSON_options));
+            FileStream stream = File.Create("BepInEx/config/RPGMods/Saves/autorespawn.json");
+            stream.Dispose();
         }
-
-        public static bool RemoveAutoRespawn(ulong SteamID)
+        string json = File.ReadAllText("BepInEx/config/RPGMods/Saves/autorespawn.json");
+        try
         {
-            if (Database.autoRespawn.ContainsKey(SteamID))
-            {
-                Database.autoRespawn.Remove(SteamID);
-                return true;
-            }
-            return false;
+            Database.autoRespawn = JsonSerializer.Deserialize<Dictionary<ulong, bool>>(json);
+            Plugin.Logger.LogWarning("AutoRespawn DB Populated.");
         }
-
-        public static void LoadAutoRespawn()
+        catch
         {
-            if (!File.Exists("BepInEx/config/RPGMods/Saves/autorespawn.json"))
-            {
-                var stream = File.Create("BepInEx/config/RPGMods/Saves/autorespawn.json");
-                stream.Dispose();
-            }
-            string json = File.ReadAllText("BepInEx/config/RPGMods/Saves/autorespawn.json");
-            try
-            {
-                Database.autoRespawn = JsonSerializer.Deserialize<Dictionary<ulong, bool>>(json);
-                Plugin.Logger.LogWarning("AutoRespawn DB Populated.");
-            }
-            catch
-            {
-                Database.autoRespawn = new Dictionary<ulong, bool>();
-                Plugin.Logger.LogWarning("AutoRespawn DB Created.");
-            }
+            Database.autoRespawn = new Dictionary<ulong, bool>();
+            Plugin.Logger.LogWarning("AutoRespawn DB Created.");
         }
     }
 }

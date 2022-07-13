@@ -3,142 +3,139 @@ using BepInEx.Logging;
 using RPGMods.Systems;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using Unity.Entities;
 using UnityEngine;
 using Wetstone.API;
 using Wetstone.Hooks;
 
-namespace RPGMods.Utils
+namespace RPGMods.Utils;
+
+public class CommandHandler
 {
-    public class CommandHandler
+    public string Prefix { get; set; }
+    public string DisabledCommands { get; set; }
+    public static Dictionary<string, bool> Permissions { get; set; }
+
+    public static float delay_Cooldown = 5;
+
+    public CommandHandler(string prefix, string disabledCommands)
     {
-        public string Prefix { get; set; }
-        public string DisabledCommands { get; set; }
-        public static Dictionary<string, bool> Permissions { get; set; }
+        Prefix = prefix;
+        DisabledCommands = disabledCommands;
+    }
 
-        public static float delay_Cooldown = 5;
+    public void HandleCommands(VChatEvent ev, ManualLogSource Log, ConfigFile config)
+    {
+        if (!ev.Message.StartsWith(Prefix, StringComparison.Ordinal)) return;
 
-        public CommandHandler(string prefix, string disabledCommands)
+        string[] args = { };
+        if (ev.Message.Contains(' '))
+            args = ev.Message.Split(' ').Skip(1).ToArray();
+
+        Type[] types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(CommandAttribute), false).Length > 0).ToArray();
+        float getCurrentTime = Time.realtimeSinceStartup;
+        foreach (Type type in types)
         {
-            Prefix = prefix;
-            DisabledCommands = disabledCommands;
-        }
+            ev.Cancel();
 
-        public void HandleCommands(VChatEvent ev, ManualLogSource Log, ConfigFile config)
-        {
-            if (!ev.Message.StartsWith(Prefix, StringComparison.Ordinal)) return;
+            string command = ev.Message.Split(' ')[0].Remove(0, 1).ToLower();
+            if (!NameExists(type, command, out string primary)) continue;
+            if (DisabledCommands.Split(',').Any(x => x.ToLower() == primary)) continue;
 
-            string[] args = { };
-            if (ev.Message.Contains(' '))
-                args = ev.Message.Split(' ').Skip(1).ToArray();
-
-            var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(CommandAttribute), false).Length > 0).ToArray();
-            float getCurrentTime = Time.realtimeSinceStartup;
-            foreach (Type type in types)
+            if (!ev.User.IsAdmin)
             {
-                ev.Cancel();
-
-                string command = ev.Message.Split(' ')[0].Remove(0, 1).ToLower();
-                if (!NameExists(type, command, out var primary)) continue;
-                if (DisabledCommands.Split(',').Any(x => x.ToLower() == primary)) continue;
-
-                if (!ev.User.IsAdmin)
+                if (!PermissionSystem.PermissionCheck(ev.User.PlatformId, primary))
                 {
-                    if (!PermissionSystem.PermissionCheck(ev.User.PlatformId, primary))
-                    {
-                        ev.User.SendSystemMessage($"<color=#ff0000ff>You do not have the required permissions to use that.</color>");
-                        return;
-                    }
-                }
-
-                Cache.command_Cooldown.TryGetValue(ev.User.PlatformId, out float last_Command);
-                if (getCurrentTime < last_Command && !ev.User.IsAdmin)
-                {
-                    int wait = (int)Math.Ceiling(last_Command - getCurrentTime);
-                    ev.User.SendSystemMessage($"<color=#ff0000ff>Please wait for {wait} second(s) before sending another command.</color>");
+                    ev.User.SendSystemMessage($"<color=#ff0000ff>You do not have the required permissions to use that.</color>");
                     return;
                 }
-                Cache.command_Cooldown[ev.User.PlatformId] = getCurrentTime + delay_Cooldown;
-                var cmd = type.GetMethod("Initialize");
-                cmd.Invoke(null, new[] { new Context(Prefix, ev, Log, config, args, DisabledCommands) });
+            }
+
+            _ = Cache.command_Cooldown.TryGetValue(ev.User.PlatformId, out float last_Command);
+            if (getCurrentTime < last_Command && !ev.User.IsAdmin)
+            {
+                int wait = (int)Math.Ceiling(last_Command - getCurrentTime);
+                ev.User.SendSystemMessage($"<color=#ff0000ff>Please wait for {wait} second(s) before sending another command.</color>");
                 return;
             }
-            Output.InvalidCommand(ev);
+            Cache.command_Cooldown[ev.User.PlatformId] = getCurrentTime + delay_Cooldown;
+            MethodInfo cmd = type.GetMethod("Initialize");
+            _ = cmd.Invoke(null, new[] { new Context(Prefix, ev, Log, config, args, DisabledCommands) });
+            return;
         }
-
-        private bool NameExists(Type type, string command, out string primary)
-        {
-            primary = "invalid";
-            List<string> aliases = type.GetAttributeValue((CommandAttribute cmd) => cmd.Aliases);
-            if (aliases.Any(x => x.ToLower() == command.ToLower()))
-            {
-                primary = aliases.First().ToLower();
-                return true;
-            }
-            return false;
-        }
+        Output.InvalidCommand(ev);
     }
 
-    [AttributeUsage(AttributeTargets.Class)]
-    public class CommandAttribute : Attribute
+    private bool NameExists(Type type, string command, out string primary)
     {
-        public List<string> Aliases;
-
-        public string Name { get; set; }
-        public string Usage { get; set; }
-        public string Description { get; set; }
-        public int ReqPermission { get; set; }
-
-        public CommandAttribute(string name, string usage = "", string description = "None", int reqPermission = 100)
+        primary = "invalid";
+        List<string> aliases = type.GetAttributeValue((CommandAttribute cmd) => cmd.Aliases);
+        if (aliases.Any(x => x.ToLower() == command.ToLower()))
         {
-            Name = name;
-            Usage = usage;
-            Description = description;
-            ReqPermission = reqPermission;
-
-            Aliases = new List<string>();
-            Aliases.AddRange(Name.ToLower().Split(", "));
+            primary = aliases.First().ToLower();
+            return true;
         }
+        return false;
     }
+}
 
-    public class Context
+[AttributeUsage(AttributeTargets.Class)]
+public class CommandAttribute : Attribute
+{
+    public List<string> Aliases;
+
+    public string Name { get; set; }
+    public string Usage { get; set; }
+    public string Description { get; set; }
+    public int ReqPermission { get; set; }
+
+    public CommandAttribute(string name, string usage = "", string description = "None", int reqPermission = 100)
     {
-        public string Prefix { get; set; }
-        public VChatEvent Event { get; set; }
-        public ManualLogSource Log { get; set; }
-        public string[] Args { get; set; }
-        public ConfigFile Config { get; set; }
-        public EntityManager EntityManager { get; set; }
+        Name = name;
+        Usage = usage;
+        Description = description;
+        ReqPermission = reqPermission;
 
-        public string[] DisabledCommands;
-
-        public Context(string prefix, VChatEvent ev, ManualLogSource log, ConfigFile config, string[] args, string disabledCommands)
-        {
-            Prefix = prefix;
-            Event = ev;
-            Log = log;
-            Args = args;
-            Config = config;
-
-            EntityManager = VWorld.Server.EntityManager;
-            DisabledCommands = disabledCommands.Split(',');
-        }
+        Aliases = new List<string>();
+        Aliases.AddRange(Name.ToLower().Split(", "));
     }
+}
 
-    public static class AttributeExtensions
+public class Context
+{
+    public string Prefix { get; set; }
+    public VChatEvent Event { get; set; }
+    public ManualLogSource Log { get; set; }
+    public string[] Args { get; set; }
+    public ConfigFile Config { get; set; }
+    public EntityManager EntityManager { get; set; }
+
+    public string[] DisabledCommands;
+
+    public Context(string prefix, VChatEvent ev, ManualLogSource log, ConfigFile config, string[] args, string disabledCommands)
     {
-        public static TValue GetAttributeValue<TAttribute, TValue>(this Type type, Func<TAttribute, TValue> valueSelector) where TAttribute : Attribute
+        Prefix = prefix;
+        Event = ev;
+        Log = log;
+        Args = args;
+        Config = config;
+
+        EntityManager = VWorld.Server.EntityManager;
+        DisabledCommands = disabledCommands.Split(',');
+    }
+}
+
+public static class AttributeExtensions
+{
+    public static TValue GetAttributeValue<TAttribute, TValue>(this Type type, Func<TAttribute, TValue> valueSelector) where TAttribute : Attribute
+    {
+        TAttribute att = type.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() as TAttribute;
+        if (att != null)
         {
-            var att = type.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() as TAttribute;
-            if (att != null)
-            {
-                return valueSelector(att);
-            }
-            return default;
+            return valueSelector(att);
         }
+        return default;
     }
 }
