@@ -208,16 +208,26 @@ public class ExperienceSystem
         entityManager.SetComponentData(entity, eq_comp);
     }
 
+    private static double rebirthIncrease = 0.05; // 0.05 being a 5% increase
+
     public static int convertXpToLevel(int xp)
     {
+        int rebirthLevel = 0; // Get Rebirth Level here 
+        double rebirthPower = Math.Pow(1 - rebirthIncrease, rebirthLevel);
+        double rebirthConstant = EXPConstant * rebirthPower;
+
         // Level = 0.05 * sqrt(xp)
-        return (int)Math.Floor(EXPConstant * Math.Sqrt(xp));
+        return (int)Math.Floor(EXPConstant * Math.Sqrt(xp)); // replace EXPConstant with rebirthConstant
     }
 
     public static int convertLevelToXp(int level)
     {
+        int rebirthLevel = 0; // Get Rebirth Level here
+        double rebirthPower = Math.Pow(1 - rebirthIncrease, rebirthLevel);
+        double rebirthConstant = EXPConstant * rebirthPower;
+
         // XP = (Level / 0.05) ^ 2
-        return (int)Math.Pow(level / EXPConstant, EXPPower);
+        return (int)Math.Pow(level / EXPConstant, EXPPower); // replace EXPConstant with rebirthConstant
     }
 
     public static int getXp(ulong SteamID)

@@ -1,5 +1,6 @@
 ﻿using RPGMods.Systems;
 using RPGMods.Utils;
+using Wetstone.API;
 
 namespace RPGMods.Commands;
 
@@ -20,8 +21,14 @@ public static class Rebirth
                 {
                     // Do the level reset process in here
                     RebirthSystem.Rebirth(ctx);
+                    ctx.Event.User.SendSystemMessage("Congratulations! You just rebirthed!");
+                    ctx.Event.User.SendSystemMessage($"Your Rebirth Level: {rebirthLevel} -> {rebirthLevel + 1}");
                 }
-                else Output.CustomErrorMessage(ctx, "You have already reached the highest rebirth level!");
+                else
+                {
+                    ctx.Event.User.SendSystemMessage($"Your Rebirth Level: {rebirthLevel}");
+                    ctx.Event.User.SendSystemMessage($"Reach Level {ExperienceSystem.MaxLevel} to rebirth!");
+                }
             }
             else Output.CustomErrorMessage(ctx, "You have not reached max level yet.");
         }

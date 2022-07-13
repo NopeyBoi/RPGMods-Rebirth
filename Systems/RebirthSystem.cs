@@ -22,5 +22,9 @@ public static class RebirthSystem
     }
 
     public static int getLevel(ulong steamId)
-        => Database.rebirths[steamId];
+    {
+        if (Database.rebirths.TryGetValue(steamId, out int level))
+            return level;
+        return 0;
+    }
 }
