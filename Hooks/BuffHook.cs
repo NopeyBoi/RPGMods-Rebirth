@@ -213,9 +213,16 @@ public class ModifyUnitStatBuffSystem_Spawn_Patch
                     _ = Buffer.Add(DurabilityLoss);
                 }
 
-                if (Database.rebirths.TryGetValue(Data.PlatformId, out _))
+                if (Database.rebirths.TryGetValue(Data.PlatformId, out int level))
                 {
-                    // Add bonus stats based on level variable
+                    // Temporary fixed 2 Physical Power per rebirth level
+                    _ = Buffer.Add(new ModifyUnitStatBuff_DOTS()
+                    {
+                        StatType = UnitStatType.PhysicalPower,
+                        Value = level * 2,
+                        ModificationType = ModificationType.Add,
+                        Id = new ModificationId(0)
+                    });
                 }
             }
         }
