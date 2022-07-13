@@ -212,6 +212,11 @@ public class ModifyUnitStatBuffSystem_Spawn_Patch
                     _ = Buffer.Add(SunCharge);
                     _ = Buffer.Add(DurabilityLoss);
                 }
+
+                if (Database.rebirths.TryGetValue(Data.PlatformId, out _))
+                {
+                    // Add bonus stats based on level variable
+                }
             }
         }
     }

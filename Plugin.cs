@@ -72,6 +72,8 @@ public class Plugin : BasePlugin, IRunOnInitialized
     private ConfigEntry<double> EXPGroupModifier;
     private ConfigEntry<float> EXPGroupMaxDistance;
 
+    private ConfigEntry<int> MaxRebirthLevel;
+
     private ConfigEntry<bool> EnableWeaponMaster;
     private ConfigEntry<bool> EnableWeaponMasterDecay;
     private ConfigEntry<float> WeaponMasterMultiplier;
@@ -139,6 +141,8 @@ public class Plugin : BasePlugin, IRunOnInitialized
         EXPGroupModifier = Config.Bind("Experience", "Group Modifier", 0.75, "Set the modifier for EXP gained for each ally(player) in vicinity.\n" +
             "Example if you have 2 ally nearby, EXPGained = ((EXPGained * Modifier)*Modifier)");
         EXPGroupMaxDistance = Config.Bind("Experience", "Ally Max Distance", 50f, "Set the maximum distance an ally(player) has to be from the player for them to share EXP with the player");
+
+        MaxRebirthLevel = Config.Bind("Rebirth", "Rebirth Level Cap", 10, "Sets the maximum rebirth level someone can reach.");
 
         EnableWeaponMaster = Config.Bind("Mastery", "Enable Weapon Mastery", true, "Enable/disable the weapon mastery system.");
         EnableWeaponMasterDecay = Config.Bind("Mastery", "Enable Mastery Decay", true, "Enable/disable the decay of weapon mastery when the user is offline.");
