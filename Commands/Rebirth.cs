@@ -1,5 +1,6 @@
 ﻿using RPGMods.Systems;
 using RPGMods.Utils;
+using System.Linq;
 using Wetstone.API;
 
 namespace RPGMods.Commands;
@@ -34,7 +35,19 @@ public static class Rebirth
         }
         else if (ctx.Args[0].ToLower() == "top")
         {
-            // show top rebirth leaderboards
+            if (Database.rebirths.Count > 0)
+            {
+                ctx.Event.User.SendSystemMessage($"Top Rebirth Level Users:");
+                var sorted = Database.rebirths.OrderByDescending(x => x.Value).ToList();
+                foreach (var rebirth in sorted)
+                {
+                    string name = Helper.GetNameFromSteamID(rebirth.Key);
+                    int level = rebirth.Value;
+
+
+                }
+            }
+            else ctx.Event.User.SendSystemMessage("No one has done a rebirth yet.");
         }
     }
 }
