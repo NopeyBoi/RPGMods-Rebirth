@@ -138,6 +138,14 @@ public class Database
 
     //-- -- Rebirth System
     public static Dictionary<ulong, int> rebirths { get; set; }
+    public static float BonusPhysicalCritChance { get; set; }
+    public static float BonusPhysicalCritDamage { get; set; }
+    public static float BonusSpellCritChance { get; set; }
+    public static float BonusSpellCritDamage { get; set; }
+    public static float BonusAttackSpeed { get; set; }
+    public static float BonusPhysicalPower { get; set; }
+    public static float BonusSpellPower { get; set; }
+    public static float BonusHealthRegen { get; set; }
 
     //-- Static Database (Data that will never be changed in runtime)
     public static Dictionary<string, PrefabGUID> database_units = new Dictionary<string, PrefabGUID>()

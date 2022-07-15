@@ -22,6 +22,7 @@ public static class AutoSaveSystem
         PvPSystem.SavePvPStat();
         WeaponMasterSystem.SaveWeaponMastery();
         BanSystem.SaveBanList();
+        RebirthSystem.SaveRebirths();
 
         Plugin.Logger.LogInfo("All database saved to JSON file.");
     }
@@ -43,6 +44,7 @@ public static class AutoSaveSystem
         ExperienceSystem.LoadEXPData();
         WeaponMasterSystem.LoadWeaponMastery();
         BanSystem.LoadBanList();
+        RebirthSystem.LoadRebirths();
 
         Plugin.Logger.LogInfo("All database is now loaded.");
     }

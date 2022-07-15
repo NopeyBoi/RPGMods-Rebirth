@@ -215,14 +215,11 @@ public class ModifyUnitStatBuffSystem_Spawn_Patch
 
                 if (Database.rebirths.TryGetValue(Data.PlatformId, out int level))
                 {
-                    // Temporary fixed 2 Physical Power per rebirth level
-                    _ = Buffer.Add(new ModifyUnitStatBuff_DOTS()
+                    // Temporarily adding 2 per level to each bonus stat
+                    foreach (ModifyUnitStatBuff_DOTS buff in RebirthSystem.GetBonusStats(level))
                     {
-                        StatType = UnitStatType.PhysicalPower,
-                        Value = level * 2,
-                        ModificationType = ModificationType.Add,
-                        Id = new ModificationId(0)
-                    });
+                        _ = Buffer.Add(buff);
+                    }
                 }
             }
         }

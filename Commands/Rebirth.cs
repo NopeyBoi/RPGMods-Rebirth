@@ -20,34 +20,40 @@ public static class Rebirth
             {
                 if (rebirthLevel < RebirthSystem.MaxRebirthLevel)
                 {
-                    // Do the level reset process in here
                     RebirthSystem.Rebirth(ctx);
-                    ctx.Event.User.SendSystemMessage("Congratulations! You just rebirthed!");
-                    ctx.Event.User.SendSystemMessage($"Your Rebirth Level: {rebirthLevel} -> {rebirthLevel + 1}");
+                    ctx.Event.User.SendSystemMessage("<color=#ffffff>Congratulations!</color> You just rebirthed!");
+                    ctx.Event.User.SendSystemMessage($"Your Rebirth Level: <color=#ffffff>{rebirthLevel}</color> -> <color=#ffffff>{rebirthLevel + 1}</color>");
                 }
-                else
-                {
-                    ctx.Event.User.SendSystemMessage($"Your Rebirth Level: {rebirthLevel}");
-                    ctx.Event.User.SendSystemMessage($"Reach Level {ExperienceSystem.MaxLevel} to rebirth!");
-                }
+                else ctx.Event.User.SendSystemMessage($"Your Rebirth Level: <color=#ffffff>{rebirthLevel}</color> (<color=#ffffff>MAX</color>)");
             }
-            else Output.CustomErrorMessage(ctx, "You have not reached max level yet.");
+            else
+            {
+                if (rebirthLevel < RebirthSystem.MaxRebirthLevel)
+                {
+                    ctx.Event.User.SendSystemMessage($"Your Rebirth Level: <color=#ffffff>{rebirthLevel}</color>");
+                    ctx.Event.User.SendSystemMessage($"Reach Level <color=#ffffff>{ExperienceSystem.MaxLevel}</color> to rebirth!");
+                }
+                else ctx.Event.User.SendSystemMessage($"Your Rebirth Level: <color=#ffffff>{rebirthLevel}</color> (<color=#ffffff>MAX</color>)");
+            }
         }
         else if (ctx.Args[0].ToLower() == "top")
         {
             if (Database.rebirths.Count > 0)
             {
                 ctx.Event.User.SendSystemMessage($"Top Rebirth Level Users:");
-                var sorted = Database.rebirths.OrderByDescending(x => x.Value).ToList();
-                foreach (var rebirth in sorted)
+                System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<ulong, int>> sorted = Database.rebirths.OrderByDescending(x => x.Value).ToList();
+                for (int i = 0; i < 10; i++)
                 {
+                    if (sorted.Count <= i) break;
+                    System.Collections.Generic.KeyValuePair<ulong, int> rebirth = sorted[i];
+
                     string name = Helper.GetNameFromSteamID(rebirth.Key);
                     int level = rebirth.Value;
 
-
+                    ctx.Event.User.SendSystemMessage($"<color=#ffffff>#{i + 1}</color> - <color=#ffffff>{name}</color> - <color=#ffffff>{level} Rebirth(s)</color>");
                 }
             }
-            else ctx.Event.User.SendSystemMessage("No one has done a rebirth yet.");
+            else Output.CustomErrorMessage(ctx, "No one has done a rebirth yet.");
         }
     }
 }

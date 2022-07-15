@@ -73,6 +73,15 @@ public class Plugin : BasePlugin, IRunOnInitialized
     private ConfigEntry<float> EXPGroupMaxDistance;
 
     private ConfigEntry<int> MaxRebirthLevel;
+    private ConfigEntry<float> BonusPhysicalCritChance;
+    private ConfigEntry<float> BonusPhysicalCritDamage;
+    private ConfigEntry<float> BonusSpellCritChance;
+    private ConfigEntry<float> BonusSpellCritDamage;
+    private ConfigEntry<float> BonusAttackSpeed;
+    private ConfigEntry<float> BonusPhysicalPower;
+    private ConfigEntry<float> BonusSpellPower;
+    private ConfigEntry<float> BonusHealthRegen;
+
 
     private ConfigEntry<bool> EnableWeaponMaster;
     private ConfigEntry<bool> EnableWeaponMasterDecay;
@@ -143,6 +152,14 @@ public class Plugin : BasePlugin, IRunOnInitialized
         EXPGroupMaxDistance = Config.Bind("Experience", "Ally Max Distance", 50f, "Set the maximum distance an ally(player) has to be from the player for them to share EXP with the player");
 
         MaxRebirthLevel = Config.Bind("Rebirth", "Rebirth Level Cap", 10, "Sets the maximum rebirth level someone can reach.");
+        BonusPhysicalCritChance = Config.Bind("Rebirth", "Rebirth Bonus Physical Crit Chance", .02f, "Bonus Physical Crit Chance per Rebirth Level gained. (0.01 == 1%)");
+        BonusPhysicalCritDamage = Config.Bind("Rebirth", "Rebirth Bonus Physical Crit Damage", .02f, "Bonus Physical Crit Damage per Rebirth Level gained. (0.01 == 1%)");
+        BonusSpellCritChance = Config.Bind("Rebirth", "Rebirth Bonus Spell Crit Chance", .02f, "Bonus Spell Crit Chance per Rebirth Level gained. (0.01 == 1%)");
+        BonusSpellCritDamage = Config.Bind("Rebirth", "Rebirth Bonus Spell Crit Damage", .02f, "Bonus Spell Crit Damage per Rebirth Level gained. (0.01 == 1%)");
+        BonusAttackSpeed = Config.Bind("Rebirth", "Rebirth Bonus Attack Speed", 2f, "Bonus Attack Speed per Rebirth Level gained.");
+        BonusPhysicalPower = Config.Bind("Rebirth", "Rebirth Bonus Physical Power", 2f, "Bonus Physical Power per Rebirth Level gained.");
+        BonusSpellPower = Config.Bind("Rebirth", "Rebirth Bonus Spell Power", 2f, "Bonus Spell Power per Rebirth Level gained.");
+        BonusHealthRegen = Config.Bind("Rebirth", "Rebirth Bonus Health Regen", 2f, "Bonus Health Regen per Rebirth Level gained.");
 
         EnableWeaponMaster = Config.Bind("Mastery", "Enable Weapon Mastery", true, "Enable/disable the weapon mastery system.");
         EnableWeaponMasterDecay = Config.Bind("Mastery", "Enable Mastery Decay", true, "Enable/disable the decay of weapon mastery when the user is offline.");
@@ -241,6 +258,14 @@ public class Plugin : BasePlugin, IRunOnInitialized
         ExperienceSystem.GroupMaxDistance = EXPGroupMaxDistance.Value;
 
         RebirthSystem.MaxRebirthLevel = MaxRebirthLevel.Value;
+        Database.BonusPhysicalCritChance = BonusPhysicalCritChance.Value;
+        Database.BonusPhysicalCritDamage = BonusPhysicalCritDamage.Value;
+        Database.BonusSpellCritChance = BonusSpellCritChance.Value;
+        Database.BonusSpellCritDamage = BonusSpellCritDamage.Value;
+        Database.BonusAttackSpeed = BonusAttackSpeed.Value;
+        Database.BonusPhysicalPower = BonusPhysicalPower.Value;
+        Database.BonusSpellPower = BonusSpellPower.Value;
+        Database.BonusHealthRegen = BonusHealthRegen.Value;
 
         WeaponMasterSystem.isMasteryEnabled = EnableWeaponMaster.Value;
         WeaponMasterSystem.isDecaySystemEnabled = EnableWeaponMasterDecay.Value;

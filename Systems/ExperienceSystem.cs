@@ -214,7 +214,7 @@ public class ExperienceSystem
     {
         int rebirthLevel = 0; // Get Rebirth Level here 
         double rebirthPower = Math.Pow(1 - rebirthIncrease, rebirthLevel);
-        double rebirthConstant = EXPConstant * rebirthPower;
+        _ = EXPConstant * rebirthPower;
 
         // Level = 0.05 * sqrt(xp)
         return (int)Math.Floor(EXPConstant * Math.Sqrt(xp)); // replace EXPConstant with rebirthConstant
@@ -224,7 +224,7 @@ public class ExperienceSystem
     {
         int rebirthLevel = 0; // Get Rebirth Level here
         double rebirthPower = Math.Pow(1 - rebirthIncrease, rebirthLevel);
-        double rebirthConstant = EXPConstant * rebirthPower;
+        _ = EXPConstant * rebirthPower;
 
         // XP = (Level / 0.05) ^ 2
         return (int)Math.Pow(level / EXPConstant, EXPPower); // replace EXPConstant with rebirthConstant
